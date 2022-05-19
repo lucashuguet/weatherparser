@@ -166,20 +166,23 @@ fn getdata(port_name: &str, baud_rate: u32, path: &str) {
 }
 
 fn createplot() -> Result<(), Box<dyn Error>>{
-    let mut rdr = csv::Reader::from_path("data.csv").unwrap();
+    let mut rdr = csv::ReaderBuilder::new()
+                                      .delimiter(b';')
+                                      .from_path("data.csv")
+                                      .unwrap();
 
     let mut x: Vec<f32> = Vec::new();
     let mut temp_y: Vec<f32> = Vec::new();
     let mut humi_y: Vec<f32> = Vec::new();
     let mut pres_y: Vec<f32> = Vec::new();
 
-    let mut iter: f32 = 0.0;
+    let mut time: f32 = 2.0;
 
     for result in rdr.records() {
         let record = result?;
 
-        x.push(iter.clone());
-        iter += 1.0;
+        x.push(time.clone());
+        time += 3.0;
 
         match record.get(1) {
             Some(i) => temp_y.push(i.to_string().parse::<f32>().unwrap().clone()),
@@ -202,8 +205,9 @@ fn createplot() -> Result<(), Box<dyn Error>>{
     temp_curve.draw(&x, &temp_y);
 
     let mut temp_plot = Plot::new();
+    temp_plot.set_title("Temperature");
     temp_plot.add(&temp_curve);
-    temp_plot.set_labels("Temps (en min)", "Température (en °C)");
+    temp_plot.set_labels("Temps (en heures)", "Température (en °C)");
 
     temp_plot.save(Path::new("temperature.svg"))?;
 
@@ -212,8 +216,9 @@ fn createplot() -> Result<(), Box<dyn Error>>{
     humi_curve.draw(&x, &humi_y);
 
     let mut humi_plot = Plot::new();
+    humi_plot.set_title("Humidity");
     humi_plot.add(&humi_curve);
-    humi_plot.set_labels("Temps (en s)", "Humidité (en %)");
+    humi_plot.set_labels("Temps (en heures)", "Humidité (en %)");
 
     humi_plot.save(Path::new("humidity.svg"))?;
 
@@ -222,8 +227,9 @@ fn createplot() -> Result<(), Box<dyn Error>>{
     pres_curve.draw(&x, &pres_y);
 
     let mut pres_plot = Plot::new();
+    pres_plot.set_title("Pressure");
     pres_plot.add(&pres_curve);
-    pres_plot.set_labels("Temps (en s)", "Pression (en hPa)");
+    pres_plot.set_labels("Temps (en heures)", "Pression (en hPa)");
 
     pres_plot.save(Path::new("pressure.svg"))?;
 
